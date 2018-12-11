@@ -7,6 +7,8 @@ import com.ciba.http.constant.HttpConfig;
 import com.ciba.http.constant.HttpConstant;
 import com.ciba.http.entity.Request;
 import com.ciba.http.listener.HttpListener;
+import com.ciba.http.manager.AsyncThreadPoolManager;
+import com.ciba.http.request.AsyncRequest;
 
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
@@ -14,23 +16,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author ciba
  * @description 网络请求
  * @date 2018/11/29
  */
-public class HttpClient {
+public class AsyncHttpClient {
     private final Map<HttpListener, List<WeakReference<Future<?>>>> listenerMap = new WeakHashMap<>();
     private final HttpConfig httpConfig;
     private final Handler handler;
-    private ExecutorService threadPool = Executors.newFixedThreadPool(10);
+    private ThreadPoolExecutor threadPool = AsyncThreadPoolManager.getInstance().getThreadPool();
     private Map<String, String> headers;
 
-    public HttpClient() {
+    public AsyncHttpClient() {
         httpConfig = createDefaultHttpConfig();
         handler = new Handler(Looper.getMainLooper());
     }
@@ -38,7 +39,7 @@ public class HttpClient {
     /**
      * 设置线程池
      */
-    public HttpClient setThreadPool(ExecutorService threadPool) {
+    public AsyncHttpClient setThreadPool(ThreadPoolExecutor threadPool) {
         if (threadPool != null) {
             this.threadPool = threadPool;
         }
@@ -48,22 +49,22 @@ public class HttpClient {
     /**
      * 设置请求头
      */
-    public HttpClient setHeaders(Map<String, String> headers) {
+    public AsyncHttpClient setHeaders(Map<String, String> headers) {
         this.headers = headers;
         return this;
     }
 
-    public HttpClient setContentType(String contentType) {
+    public AsyncHttpClient setContentType(String contentType) {
         httpConfig.setContentType(contentType);
         return this;
     }
 
-    public HttpClient setConnectTimeout(long connectTimeout) {
+    public AsyncHttpClient setConnectTimeout(long connectTimeout) {
         httpConfig.setConnectTimeout(connectTimeout);
         return this;
     }
 
-    public HttpClient setReadTimeout(long readTimeout) {
+    public AsyncHttpClient setReadTimeout(long readTimeout) {
         httpConfig.setReadTimeout(readTimeout);
         return this;
     }
@@ -133,14 +134,14 @@ public class HttpClient {
         request.setRequestParams(params);
         request.setHeaders(headers);
 
-        Future<?> future = threadPool.submit(new RequestRunnable(handler, request, listenerMap, httpListener));
+        Future<?> future = threadPool.submit(new AsyncRequest(handler, request, listenerMap, httpListener));
         if (httpListener != null) {
             List<WeakReference<Future<?>>> futureList = listenerMap.get(httpListener);
             if (futureList == null) {
                 futureList = new LinkedList<>();
+                listenerMap.put(httpListener, futureList);
             }
             futureList.add(new WeakReference<Future<?>>(future));
-            listenerMap.put(httpListener, futureList);
         }
     }
 

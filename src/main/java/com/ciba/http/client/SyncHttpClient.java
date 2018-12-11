@@ -1,8 +1,9 @@
-package com.ciba.http.client.sync;
+package com.ciba.http.client;
 
 import com.ciba.http.constant.HttpConfig;
 import com.ciba.http.constant.HttpConstant;
 import com.ciba.http.entity.Request;
+import com.ciba.http.request.SyncRequest;
 
 import java.util.Map;
 
