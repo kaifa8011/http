@@ -1,6 +1,6 @@
 package com.ciba.http.manager;
 
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -15,9 +15,9 @@ public class AsyncThreadPoolManager {
 
 
     private AsyncThreadPoolManager() {
-        threadPool = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-                60L, TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>());
+        threadPool = new ThreadPoolExecutor(2, 20, 20L,
+                TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(32),
+                new ThreadPoolExecutor.DiscardOldestPolicy());
     }
 
     public static AsyncThreadPoolManager getInstance() {
