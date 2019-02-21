@@ -198,4 +198,8 @@ public class AsyncHttpClient {
                 , HttpConstant.DEFAULT_TIME_OUT
                 , false);
     }
+
+    public HttpConfig getHttpConfig() {
+        return httpConfig;
+    }
 }

@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import com.ciba.http.constant.HttpConstant;
 import com.ciba.http.entity.Request;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -143,5 +144,45 @@ public class RequestUtil {
             params.deleteCharAt(params.lastIndexOf("&"));
         }
         return params.toString();
+    }
+
+    /**
+     * 解压缩
+     *
+     * @param data 待压缩的数据
+     * @return byte[] 解压缩后的数据
+     */
+    public static String decompress(byte[] data) {
+        String unCompressed = null;
+        ByteArrayOutputStream bos = null;
+        Inflater inflater = null;
+        try {
+            bos = new ByteArrayOutputStream(data.length);
+            inflater = new Inflater();
+            inflater.setInput(data);
+            final byte[] buf = new byte[1024];
+            while (!inflater.finished()) {
+                int count = inflater.inflate(buf);
+                bos.write(buf, 0, count);
+            }
+            unCompressed = bos.toString();
+            bos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (inflater != null) {
+                inflater.end();
+                inflater = null;
+            }
+            if (bos != null) {
+                try {
+                    bos.close();
+                    bos = null;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return unCompressed;
     }
 }
