@@ -3,7 +3,7 @@ package com.ciba.http.request;
 import com.ciba.http.constant.HttpConstant;
 import com.ciba.http.entity.Request;
 
-import org.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -14,6 +14,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -162,8 +164,24 @@ public abstract class BaseRequest {
             JSONObject jsonObject = new JSONObject();
             try {
                 jsonObject.put("message", message);
-                jsonObject.put("responseHeader", responseHeader);
-            } catch (JSONException e) {
+                Iterator<Map.Entry<String, List<String>>> iterator = responseHeader.entrySet().iterator();
+                JSONObject responseJSONObj = new JSONObject();
+                while (iterator.hasNext()) {
+                    Map.Entry<String, List<String>> next = iterator.next();
+                    String key = next.getKey();
+                    if (key != null) {
+                        JSONArray jsonArray = new JSONArray();
+                        List<String> value = next.getValue();
+                        if (value != null && value.size() > 0) {
+                            for (int i = 0; i < value.size(); i++) {
+                                jsonArray.put(value.get(i));
+                            }
+                        }
+                        responseJSONObj.put(key, jsonArray);
+                    }
+                }
+                jsonObject.put("responseHeader", responseJSONObj);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             this.errorMessage = jsonObject.toString();

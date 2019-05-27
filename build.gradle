@@ -37,7 +37,7 @@ publish {
     userOrg = 'kaifa8011ol'               // bintray注册的用户名
     groupId = 'com.ciba'
     artifactId = 'http'                // bintray创建的package
-    publishVersion = '0.0.12'
+    publishVersion = '0.0.13'
 }
 
 dependencies {
