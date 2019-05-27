@@ -3,6 +3,9 @@ package com.ciba.http.request;
 import com.ciba.http.constant.HttpConstant;
 import com.ciba.http.entity.Request;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,6 +34,7 @@ public abstract class BaseRequest {
     protected String execute() {
         errorCode = HttpConstant.OTHER_CODE;
         errorMessage = HttpConstant.ERROR_MESSAGE_UNKNOW;
+        Map<String, List<String>> responseHeader = null;
 
         URL url;
         HttpURLConnection httpURLConnection = null;
@@ -41,6 +46,8 @@ public abstract class BaseRequest {
         String result = null;
         String uri = null;
         String paramsString = null;
+        Map<String, String> headers = request.getHeaders();
+        boolean needResponseHeader = headers != null && HttpConstant.RESPONSE_HEADER.equals(headers.get(HttpConstant.CIBA_RESPONSE_HEADER));
         try {
             uri = request.getUrl();
             paramsString = RequestUtil.getSpliceParams(request.getRequestParams(), request.getHttpConfig().getCharsetName());
@@ -59,6 +66,12 @@ public abstract class BaseRequest {
             }
             // 获取结果返回码
             int code = httpURLConnection.getResponseCode();
+
+            // 获取Response的headers
+            if (needResponseHeader) {
+                responseHeader = httpURLConnection.getHeaderFields();
+            }
+
             if (HttpConstant.SUCCESS_CODE == code) {
                 Map<String, String> requestParams = request.getRequestParams();
                 // 获取网络的输入流
@@ -85,10 +98,13 @@ public abstract class BaseRequest {
                 }
             } else {
                 errorStream = httpURLConnection.getErrorStream();
-                failed(code, HttpConstant.ERROR_MESSAGE_CODE_NOT_200);
+                failed(code, HttpConstant.ERROR_MESSAGE_CODE_NOT_200, responseHeader);
             }
         } catch (Exception e) {
-            failed(HttpConstant.OTHER_CODE, e.getMessage());
+            if (needResponseHeader) {
+                responseHeader = httpURLConnection.getHeaderFields();
+            }
+            failed(HttpConstant.OTHER_CODE, e.getMessage(), responseHeader);
         } finally {
             uri = null;
             paramsString = null;
@@ -140,10 +156,19 @@ public abstract class BaseRequest {
         return result;
     }
 
-    private void failed(int code, String message) {
+    private void failed(int code, String message, Map<String, List<String>> responseHeader) {
         this.errorCode = code;
-        this.errorMessage = message;
+        if (responseHeader != null) {
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("message", message);
+                jsonObject.put("responseHeader", responseHeader);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            this.errorMessage = jsonObject.toString();
+        } else {
+            this.errorMessage = message;
+        }
     }
-
-
 }

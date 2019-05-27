@@ -17,6 +17,9 @@ public class HttpConstant {
     public static final String CIBA_UNZIP_KEY = "CIBA_UNZIP_KEY";
     public static final String UNZLIB = "UNZLIB";
 
+    public static final String CIBA_RESPONSE_HEADER = "CIBA_RESPONSE_HEADER";
+    public static final String RESPONSE_HEADER = "1";
+
     public static final long DEFAULT_TIME_OUT = 5000;
     public static final int SUCCESS_CODE = 200;
     public static final int OTHER_CODE = -1001;

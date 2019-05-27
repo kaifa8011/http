@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-//apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'com.novoda.bintray-release'
 
 android {
     compileSdkVersion 28
@@ -24,21 +24,21 @@ android {
     }
 
 }
-//tasks.withType(JavaCompile) {
-//    options.encoding = "UTF-8"
-//}
-//task javadoc(type: Javadoc) {
-//    source = android.sourceSets.main.java.srcDirs
-//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-//    options.encoding = "UTF-8"
-//}
-//
-//publish {
-//    userOrg = 'kaifa8011ol'               // bintray注册的用户名
-//    groupId = 'com.ciba'
-//    artifactId = 'http'                // bintray创建的package
-//    publishVersion = '0.0.11'
-//}
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    options.encoding = "UTF-8"
+}
+
+publish {
+    userOrg = 'kaifa8011ol'               // bintray注册的用户名
+    groupId = 'com.ciba'
+    artifactId = 'http'                // bintray创建的package
+    publishVersion = '0.0.12'
+}
 
 dependencies {
     testImplementation 'junit:junit:4.12'
