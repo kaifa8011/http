@@ -26,4 +26,5 @@ public class HttpConstant {
 
     public static final String ERROR_MESSAGE_CODE_NOT_200 = "response code not 200";
     public static final String ERROR_MESSAGE_UNKNOW = "unknow error";
+    public static final String ERROR_MESSAGE_RESULT_EMPTY = "result data is empty";
 }

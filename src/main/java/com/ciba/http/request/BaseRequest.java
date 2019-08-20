@@ -1,5 +1,7 @@
 package com.ciba.http.request;
 
+import android.text.TextUtils;
+
 import com.ciba.http.constant.HttpConstant;
 import com.ciba.http.entity.Request;
 
@@ -14,7 +16,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +98,9 @@ public abstract class BaseRequest {
                         builder.append(line);
                     }
                     result = builder.toString();
+                }
+                if (TextUtils.isEmpty(result)) {
+                    this.errorMessage = HttpConstant.ERROR_MESSAGE_RESULT_EMPTY;
                 }
             } else {
                 errorStream = httpURLConnection.getErrorStream();
