@@ -7,6 +7,7 @@ import com.ciba.http.entity.Request;
 import com.ciba.http.listener.HttpListener;
 
 import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -34,7 +35,7 @@ public class AsyncRequest extends BaseRequest implements Runnable {
     public void run() {
         onStart();
         String result = execute();
-        if (TextUtils.isEmpty(result)) {
+        if (resultCode != HttpURLConnection.HTTP_OK && TextUtils.isEmpty(result)) {
             onFailed();
         } else {
             onSuccess(result);

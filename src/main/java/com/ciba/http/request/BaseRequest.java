@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,9 +27,12 @@ import java.util.Map;
  * @date 2018/12/10
  */
 public abstract class BaseRequest {
+    private static final int REDIRECT_MAX_NUM = 3;
+    private int redirectNum = 0;
     protected int errorCode;
+    protected int resultCode;
     protected String errorMessage;
-    protected final Request request;
+    protected Request request;
 
     public BaseRequest(Request request) {
         this.request = request;
@@ -74,8 +78,9 @@ public abstract class BaseRequest {
             if (needResponseHeader) {
                 responseHeader = httpURLConnection.getHeaderFields();
             }
-
-            if (HttpConstant.SUCCESS_CODE == code) {
+            resultCode = code;
+            redirectNum++;
+            if (HttpURLConnection.HTTP_OK == code) {
                 Map<String, String> requestParams = request.getRequestParams();
                 // 获取网络的输入流
                 inputStream = RequestUtil.getInputStream(request, httpURLConnection);
@@ -102,6 +107,19 @@ public abstract class BaseRequest {
                 if (TextUtils.isEmpty(result)) {
                     this.errorMessage = HttpConstant.ERROR_MESSAGE_RESULT_EMPTY;
                 }
+            } else if (HttpURLConnection.HTTP_MOVED_PERM == code
+                    || HttpURLConnection.HTTP_MOVED_TEMP == code
+                    || HttpURLConnection.HTTP_SEE_OTHER == code) {
+                if (redirectNum > REDIRECT_MAX_NUM) {
+                    failed(HttpConstant.OTHER_CODE, "重定向次数达到上限", responseHeader);
+                } else {
+                    // get redirect url from "location" header field
+                    String newUrl = httpURLConnection.getHeaderField("Location");
+                    Request requestTemp = new Request(request.getRequestMethod(), newUrl, request.getHttpConfig());
+                    requestTemp.setHeaders(request.getHeaders());
+                    request = requestTemp;
+                    return execute();
+                }
             } else {
                 errorStream = httpURLConnection.getErrorStream();
                 failed(code, HttpConstant.ERROR_MESSAGE_CODE_NOT_200, responseHeader);
@@ -118,48 +136,26 @@ public abstract class BaseRequest {
                 // 最后记得关闭连接
                 httpURLConnection.disconnect();
             }
-            if (byteArrayOutputStream != null) {
-                try {
-                    byteArrayOutputStream.close();
-                    byteArrayOutputStream = null;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                    inputStream = null;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (errorStream != null) {
-                try {
-                    errorStream.close();
-                    errorStream = null;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                    outputStream = null;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (bufferedReader != null) {
-                try {
-                    bufferedReader.close();
-                    bufferedReader = null;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            close(byteArrayOutputStream, inputStream, errorStream, outputStream, bufferedReader);
         }
         return result;
+    }
+
+    private void close(Closeable... closeables) {
+        if (closeables != null && closeables.length > 0) {
+            for (int i = 0; i < closeables.length; i++) {
+                Closeable closeable = closeables[i];
+                if (closeable != null) {
+                    try {
+                        closeable.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    closeable = null;
+                }
+            }
+            closeables = null;
+        }
     }
 
     private void failed(int code, String message, Map<String, List<String>> responseHeader) {

@@ -68,7 +68,7 @@ public class RequestUtil {
         httpURLConnection.setConnectTimeout((int) request.getHttpConfig().getConnectTimeout());
         httpURLConnection.setReadTimeout((int) request.getHttpConfig().getReadTimeout());
         httpURLConnection.setAllowUserInteraction(false);
-        httpURLConnection.setInstanceFollowRedirects(false);
+        httpURLConnection.setInstanceFollowRedirects(true);
         // 设置运行输入
         httpURLConnection.setDoInput(true);
         // 设置是否使用缓存
