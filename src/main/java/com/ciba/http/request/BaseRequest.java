@@ -125,7 +125,7 @@ public abstract class BaseRequest {
                 failed(code, HttpConstant.ERROR_MESSAGE_CODE_NOT_200, responseHeader);
             }
         } catch (Exception e) {
-            if (needResponseHeader) {
+            if (needResponseHeader && httpURLConnection != null) {
                 responseHeader = httpURLConnection.getHeaderFields();
             }
             failed(HttpConstant.OTHER_CODE, e.getMessage(), responseHeader);
@@ -135,6 +135,7 @@ public abstract class BaseRequest {
             if (httpURLConnection != null) {
                 // 最后记得关闭连接
                 httpURLConnection.disconnect();
+                httpURLConnection = null;
             }
             close(byteArrayOutputStream, inputStream, errorStream, outputStream, bufferedReader);
         }
