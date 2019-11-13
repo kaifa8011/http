@@ -27,7 +27,7 @@ import java.util.Map;
  * @date 2018/12/10
  */
 public abstract class BaseRequest {
-    private static final int REDIRECT_MAX_NUM = 3;
+    private static final int REDIRECT_MAX_NUM = 5;
     private int redirectNum = 0;
     protected int errorCode;
     protected int resultCode;

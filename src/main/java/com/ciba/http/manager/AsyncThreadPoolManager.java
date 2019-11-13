@@ -13,10 +13,13 @@ public class AsyncThreadPoolManager {
     private static AsyncThreadPoolManager instance;
     private ThreadPoolExecutor threadPool;
 
+    private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
+
+    private static final int CORE_POOL_SIZE = Math.max(2, Math.min(CPU_COUNT - 1, 5));
 
     private AsyncThreadPoolManager() {
-        threadPool = new ThreadPoolExecutor(2, 20, 20L,
-                TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(32),
+        threadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, 20, 20L,
+                TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(16),
                 new ThreadPoolExecutor.DiscardOldestPolicy());
     }
 
