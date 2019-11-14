@@ -89,11 +89,9 @@ public class RequestUtil {
         String postParams = request.getJson() != null ? request.getJson() : paramsString;
         if (postParams != null) {
             byte[] bytes = postParams.getBytes(request.getHttpConfig().getCharsetName());
-            httpURLConnection.setFixedLengthStreamingMode(bytes.length);
             outputStream = httpURLConnection.getOutputStream();
             outputStream.write(bytes);
-            outputStream.flush();
-            outputStream.close();
+            httpURLConnection.connect();
         }
         return outputStream;
     }
