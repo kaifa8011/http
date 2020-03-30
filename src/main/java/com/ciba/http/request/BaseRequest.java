@@ -37,7 +37,7 @@ public abstract class BaseRequest {
         try {
             if (request != null && request.getHeaders() != null) {
                 String cibaResponseHeader = request.getHeaders().get(HttpConstant.CIBA_RESPONSE_HEADER);
-                if (TextUtils.isEmpty(cibaResponseHeader)) {
+                if (!TextUtils.isEmpty(cibaResponseHeader)) {
                     needResponseHeader = HttpConstant.RESPONSE_HEADER.equals(cibaResponseHeader);
                     request.getHeaders().remove(HttpConstant.CIBA_RESPONSE_HEADER);
                 }
