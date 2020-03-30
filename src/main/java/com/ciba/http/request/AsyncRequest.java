@@ -81,7 +81,9 @@ public class AsyncRequest extends BaseRequest implements Runnable {
                 @Override
                 public void run() {
                     httpListener.onRequestSuccess(result);
-                    httpListener.onRequestSuccess(result, responseHeader);
+                    if (needResponseHeader) {
+                        httpListener.onRequestSuccess(result, responseHeader);
+                    }
                 }
             });
         }

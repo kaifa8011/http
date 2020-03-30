@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public abstract class BaseRequest {
     private static final int REDIRECT_MAX_NUM = 5;
-    private boolean needResponseHeader;
+    protected boolean needResponseHeader;
     private int redirectNum = 0;
     protected int errorCode;
     protected int resultCode;
