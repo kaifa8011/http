@@ -1,5 +1,8 @@
 package com.ciba.http.listener;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author ciba
  * @description 描述
@@ -18,6 +21,11 @@ public class SimpleHttpListener implements HttpListener {
 
     @Override
     public void onRequestSuccess(String result) {
+
+    }
+
+    @Override
+    public void onRequestSuccess(String result, Map<String, List<String>> responseHeader) {
 
     }
 }

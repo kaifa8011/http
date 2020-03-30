@@ -5,9 +5,6 @@ import android.text.TextUtils;
 import com.ciba.http.constant.HttpConstant;
 import com.ciba.http.entity.Request;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -17,7 +14,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -28,20 +24,32 @@ import java.util.Map;
  */
 public abstract class BaseRequest {
     private static final int REDIRECT_MAX_NUM = 5;
+    private boolean needResponseHeader;
     private int redirectNum = 0;
     protected int errorCode;
     protected int resultCode;
     protected String errorMessage;
     protected Request request;
+    protected Map<String, List<String>> responseHeader = null;
 
     public BaseRequest(Request request) {
         this.request = request;
+        try {
+            if (request != null && request.getHeaders() != null) {
+                String cibaResponseHeader = request.getHeaders().get(HttpConstant.CIBA_RESPONSE_HEADER);
+                if (TextUtils.isEmpty(cibaResponseHeader)) {
+                    needResponseHeader = HttpConstant.RESPONSE_HEADER.equals(cibaResponseHeader);
+                    request.getHeaders().remove(HttpConstant.CIBA_RESPONSE_HEADER);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     protected String execute() {
         errorCode = HttpConstant.OTHER_CODE;
         errorMessage = HttpConstant.ERROR_MESSAGE_UNKNOW;
-        Map<String, List<String>> responseHeader = null;
 
         URL url;
         HttpURLConnection httpURLConnection = null;
@@ -54,7 +62,6 @@ public abstract class BaseRequest {
         String uri = null;
         String paramsString = null;
         Map<String, String> headers = request.getHeaders();
-        boolean needResponseHeader = headers != null && HttpConstant.RESPONSE_HEADER.equals(headers.get(HttpConstant.CIBA_RESPONSE_HEADER));
         try {
             uri = request.getUrl();
             paramsString = RequestUtil.getSpliceParams(request.getRequestParams(), request.getHttpConfig().getCharsetName());
@@ -111,7 +118,7 @@ public abstract class BaseRequest {
                     || HttpURLConnection.HTTP_MOVED_TEMP == code
                     || HttpURLConnection.HTTP_SEE_OTHER == code) {
                 if (redirectNum > REDIRECT_MAX_NUM) {
-                    failed(HttpConstant.OTHER_CODE, "重定向次数达到上限", responseHeader);
+                    failed(HttpConstant.OTHER_CODE, "重定向次数达到上限");
                 } else {
                     // get redirect url from "location" header field
                     String newUrl = httpURLConnection.getHeaderField("Location");
@@ -122,13 +129,10 @@ public abstract class BaseRequest {
                 }
             } else {
                 errorStream = httpURLConnection.getErrorStream();
-                failed(code, HttpConstant.ERROR_MESSAGE_CODE_NOT_200, responseHeader);
+                failed(code, HttpConstant.ERROR_MESSAGE_CODE_NOT_200);
             }
         } catch (Exception e) {
-            if (needResponseHeader && httpURLConnection != null) {
-                responseHeader = httpURLConnection.getHeaderFields();
-            }
-            failed(HttpConstant.OTHER_CODE, e.getMessage(), responseHeader);
+            failed(HttpConstant.OTHER_CODE, e.getMessage());
         } finally {
             uri = null;
             paramsString = null;
@@ -159,35 +163,8 @@ public abstract class BaseRequest {
         }
     }
 
-    private void failed(int code, String message, Map<String, List<String>> responseHeader) {
+    private void failed(int code, String message) {
         this.errorCode = code;
-        if (responseHeader != null) {
-            JSONObject jsonObject = new JSONObject();
-            try {
-                jsonObject.put("message", message);
-                Iterator<Map.Entry<String, List<String>>> iterator = responseHeader.entrySet().iterator();
-                JSONObject responseJSONObj = new JSONObject();
-                while (iterator.hasNext()) {
-                    Map.Entry<String, List<String>> next = iterator.next();
-                    String key = next.getKey();
-                    if (key != null) {
-                        JSONArray jsonArray = new JSONArray();
-                        List<String> value = next.getValue();
-                        if (value != null && value.size() > 0) {
-                            for (int i = 0; i < value.size(); i++) {
-                                jsonArray.put(value.get(i));
-                            }
-                        }
-                        responseJSONObj.put(key, jsonArray);
-                    }
-                }
-                jsonObject.put("responseHeader", responseJSONObj);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            this.errorMessage = jsonObject.toString();
-        } else {
-            this.errorMessage = message;
-        }
+        this.errorMessage = message;
     }
 }

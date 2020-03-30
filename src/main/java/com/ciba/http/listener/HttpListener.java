@@ -1,5 +1,8 @@
 package com.ciba.http.listener;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author ciba
  * @description 描述
@@ -25,4 +28,12 @@ public interface HttpListener {
      * @param result ：返回结果
      */
     void onRequestSuccess(String result);
+
+    /**
+     * 网络请求成功
+     *
+     * @param result         ：返回结果
+     * @param responseHeader ：返回结果头
+     */
+    void onRequestSuccess(String result, Map<String, List<String>> responseHeader);
 }
