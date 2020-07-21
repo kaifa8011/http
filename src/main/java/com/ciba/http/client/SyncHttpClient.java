@@ -1,6 +1,5 @@
 package com.ciba.http.client;
 
-import com.ciba.http.constant.HttpConfig;
 import com.ciba.http.constant.HttpConstant;
 import com.ciba.http.entity.Request;
 import com.ciba.http.request.SyncRequest;
@@ -12,40 +11,15 @@ import java.util.Map;
  * @description 网络请求
  * @date 2018/11/29
  */
-public class SyncHttpClient {
-    private final HttpConfig httpConfig;
-    private Map<String, String> headers;
+public class SyncHttpClient extends BaseHttpClient<SyncHttpClient> {
 
     public SyncHttpClient() {
-        httpConfig = createDefaultHttpConfig();
-    }
-
-    /**
-     * 设置请求头
-     */
-    public SyncHttpClient setHeaders(Map<String, String> headers) {
-        this.headers = headers;
-        return this;
-    }
-
-    public SyncHttpClient setContentType(String contentType) {
-        httpConfig.setContentType(contentType);
-        return this;
-    }
-
-    public SyncHttpClient setConnectTimeout(long connectTimeout) {
-        httpConfig.setConnectTimeout(connectTimeout);
-        return this;
-    }
-
-    public SyncHttpClient setReadTimeout(long readTimeout) {
-        httpConfig.setReadTimeout(readTimeout);
-        return this;
+        super();
     }
 
     /*******************************************get request**********************************************/
     public String get(String url, Map<String, String> params) {
-        return get(url, params, headers);
+        return get(url, params, getHeaders());
     }
 
     /**
@@ -62,7 +36,7 @@ public class SyncHttpClient {
     /*******************************************post request**********************************************/
 
     public String post(String url, Map<String, String> params) {
-        return post(url, params, headers);
+        return post(url, params, getHeaders());
     }
 
     public String post(String url, Map<String, String> params, Map<String, String> headers) {
@@ -70,7 +44,7 @@ public class SyncHttpClient {
     }
 
     public String postJson(String url, String json) {
-        return postJson(url, json, headers);
+        return postJson(url, json, getHeaders());
     }
 
     public String postJson(String url, String json, Map<String, String> headers) {
@@ -100,22 +74,10 @@ public class SyncHttpClient {
      */
     private String sendRequest(String requestMethod, String url, String json, Map<String, String> params
             , Map<String, String> headers) {
-        Request request = new Request(requestMethod, url, httpConfig);
+        Request request = new Request(requestMethod, url, getHttpConfig());
         request.setJson(json);
         request.setRequestParams(params);
         request.setHeaders(headers);
         return new SyncRequest(request).run();
-    }
-
-    /**
-     * 创建默认的网络请求参数
-     */
-    private HttpConfig createDefaultHttpConfig() {
-        return new HttpConfig(HttpConstant.DEFAULT_CONTENT_TYPE
-                , HttpConstant.DEFAULT_ACCEPT
-                , HttpConstant.DEFAULT_CHARSET_NAME
-                , HttpConstant.DEFAULT_TIME_OUT
-                , HttpConstant.DEFAULT_TIME_OUT
-                , false);
     }
 }

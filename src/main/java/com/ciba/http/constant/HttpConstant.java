@@ -8,6 +8,7 @@ package com.ciba.http.constant;
 public class HttpConstant {
     public static final String POST_METHOD = "POST";
     public static final String GET_METHOD = "GET";
+    public static final String HTTPS = "https://";
 
     public static final String DEFAULT_CONTENT_TYPE = "application/x-www-form-urlencoded";
     public static final String JSON_CONTENT_TYPE = "application/json";

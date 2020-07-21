@@ -1,5 +1,8 @@
 package com.ciba.http.constant;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSocketFactory;
+
 /**
  * @author ciba
  * @description 网络配置信息
@@ -12,6 +15,8 @@ public class HttpConfig {
     private long connectTimeout;
     private long readTimeout;
     private boolean useCaches;
+    private HostnameVerifier hostnameVerifier;
+    private SSLSocketFactory sslSocketFactory;
 
     public HttpConfig(String contentType, String accept, String charsetName
             , long connectTimeout, long readTimeout, boolean useCaches) {
@@ -69,5 +74,21 @@ public class HttpConfig {
 
     public void setReadTimeout(long readTimeout) {
         this.readTimeout = readTimeout;
+    }
+
+    public HostnameVerifier getHostnameVerifier() {
+        return hostnameVerifier;
+    }
+
+    public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+        this.hostnameVerifier = hostnameVerifier;
+    }
+
+    public SSLSocketFactory getSslSocketFactory() {
+        return sslSocketFactory;
+    }
+
+    public void setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
+        this.sslSocketFactory = sslSocketFactory;
     }
 }

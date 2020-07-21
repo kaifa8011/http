@@ -2,6 +2,7 @@ package com.ciba.http.request;
 
 import android.text.TextUtils;
 
+import com.ciba.http.constant.HttpConfig;
 import com.ciba.http.constant.HttpConstant;
 import com.ciba.http.entity.Request;
 
@@ -16,6 +17,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * @author ciba
@@ -67,7 +70,21 @@ public abstract class BaseRequest {
             paramsString = RequestUtil.getSpliceParams(request.getRequestParams(), request.getHttpConfig().getCharsetName());
             url = RequestUtil.getUrl(uri, request.getRequestMethod(), paramsString);
 
-            httpURLConnection = (HttpURLConnection) url.openConnection();
+            if (uri != null && uri.startsWith(HttpConstant.HTTPS)) {
+                HttpsURLConnection httpsURLConnection = (HttpsURLConnection) url.openConnection();
+                HttpConfig httpConfig = request.getHttpConfig();
+                if (httpConfig != null) {
+                    if (httpConfig.getHostnameVerifier() != null) {
+                        httpsURLConnection.setHostnameVerifier(httpConfig.getHostnameVerifier());
+                    }
+                    if (httpConfig.getSslSocketFactory() != null) {
+                        httpsURLConnection.setSSLSocketFactory(httpConfig.getSslSocketFactory());
+                    }
+                }
+                httpURLConnection = httpsURLConnection;
+            } else {
+                httpURLConnection = (HttpURLConnection) url.openConnection();
+            }
 
             RequestUtil.initPublicRequest(httpURLConnection, request);
 
@@ -153,7 +170,7 @@ public abstract class BaseRequest {
                 if (closeable != null) {
                     try {
                         closeable.close();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     closeable = null;

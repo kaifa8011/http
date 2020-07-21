@@ -3,7 +3,6 @@ package com.ciba.http.client;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.ciba.http.constant.HttpConfig;
 import com.ciba.http.constant.HttpConstant;
 import com.ciba.http.entity.Request;
 import com.ciba.http.listener.HttpListener;
@@ -24,15 +23,13 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @description 网络请求
  * @date 2018/11/29
  */
-public class AsyncHttpClient {
+public class AsyncHttpClient extends BaseHttpClient<AsyncHttpClient> {
     private final Map<HttpListener, List<WeakReference<Future<?>>>> listenerMap = new WeakHashMap<>();
-    private final HttpConfig httpConfig;
     private final Handler handler;
     private ThreadPoolExecutor threadPool = AsyncThreadPoolManager.getInstance().getThreadPool();
-    private Map<String, String> headers;
 
     public AsyncHttpClient() {
-        httpConfig = createDefaultHttpConfig();
+        super();
         handler = new Handler(Looper.getMainLooper());
     }
 
@@ -46,32 +43,9 @@ public class AsyncHttpClient {
         return this;
     }
 
-    /**
-     * 设置请求头
-     */
-    public AsyncHttpClient setHeaders(Map<String, String> headers) {
-        this.headers = headers;
-        return this;
-    }
-
-    public AsyncHttpClient setContentType(String contentType) {
-        httpConfig.setContentType(contentType);
-        return this;
-    }
-
-    public AsyncHttpClient setConnectTimeout(long connectTimeout) {
-        httpConfig.setConnectTimeout(connectTimeout);
-        return this;
-    }
-
-    public AsyncHttpClient setReadTimeout(long readTimeout) {
-        httpConfig.setReadTimeout(readTimeout);
-        return this;
-    }
-
     /*******************************************get request**********************************************/
     public void get(String url, Map<String, String> params, HttpListener httpListener) {
-        get(url, params, headers, httpListener);
+        get(url, params, getHeaders(), httpListener);
     }
 
     /**
@@ -89,7 +63,7 @@ public class AsyncHttpClient {
     /*******************************************post request**********************************************/
 
     public void post(String url, Map<String, String> params, HttpListener httpListener) {
-        post(url, params, headers, httpListener);
+        post(url, params, getHeaders(), httpListener);
     }
 
     public void post(String url, Map<String, String> params, Map<String, String> headers, HttpListener httpListener) {
@@ -97,7 +71,7 @@ public class AsyncHttpClient {
     }
 
     public void postJson(String url, String json, HttpListener httpListener) {
-        postJson(url, json, headers, httpListener);
+        postJson(url, json, getHeaders(), httpListener);
     }
 
     public void postJson(String url, String json, Map<String, String> headers, HttpListener httpListener) {
@@ -129,7 +103,7 @@ public class AsyncHttpClient {
      */
     private void sendRequest(String requestMethod, String url, String json, Map<String, String> params
             , Map<String, String> headers, HttpListener httpListener) {
-        Request request = new Request(requestMethod, url, httpConfig);
+        Request request = new Request(requestMethod, url, getHttpConfig());
         request.setJson(json);
         request.setRequestParams(params);
         request.setHeaders(headers);
@@ -185,21 +159,5 @@ public class AsyncHttpClient {
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
-    }
-
-    /**
-     * 创建默认的网络请求参数
-     */
-    private HttpConfig createDefaultHttpConfig() {
-        return new HttpConfig(HttpConstant.DEFAULT_CONTENT_TYPE
-                , HttpConstant.DEFAULT_ACCEPT
-                , HttpConstant.DEFAULT_CHARSET_NAME
-                , HttpConstant.DEFAULT_TIME_OUT
-                , HttpConstant.DEFAULT_TIME_OUT
-                , false);
-    }
-
-    public HttpConfig getHttpConfig() {
-        return httpConfig;
     }
 }
